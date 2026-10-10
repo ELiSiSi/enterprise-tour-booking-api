@@ -1,92 +1,183 @@
 # Enterprise Tour Booking API
 
-Natours is an enterprise-grade tour booking web application built with Node.js, Express, TypeScript, and MongoDB.
+![Node.js](https://img.shields.io/badge/Node.js-18.x-green)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue)
+![Express](https://img.shields.io/badge/Express-4.x-lightgrey)
+![MongoDB](https://img.shields.io/badge/MongoDB-6.x-brightgreen)
+![Docker](https://img.shields.io/badge/Docker-Ready-blue)
+![License](https://img.shields.io/badge/License-MIT-green)
 
-## Features
+An enterprise-grade, highly secure, and fully typed RESTful API for tour management and booking. Built with **Node.js, Express, TypeScript, and MongoDB**, this architecture serves as a solid foundation for scaleable booking platforms.
 
-- **Authentication & Authorization**: JWT-based authentication with role-based access control (User, Guide, Lead Guide, Admin).
-- **Multi-Factor Authentication (MFA)**: Enhances security for user accounts.
-- **Tours Management**: Complete CRUD operations for tours including geospatial queries.
-- **Reviews & Ratings**: Users can leave reviews for tours they've booked.
-- **Bookings & Payments**: Secure checkout with Stripe.
-- **Security**: Data sanitization against NoSQL query injection & XSS, rate limiting, helmet headers, and parameter pollution prevention.
-- **Dockerized**: Fully containerized with Docker and Docker Compose.
-- **CI/CD**: GitHub Actions workflow for automated testing and building.
+---
 
-## Technologies Used
+## 🌟 Key Features
 
-- **Backend**: Node.js, Express, TypeScript
-- **Database**: MongoDB (Mongoose)
-- **Payments**: Stripe
-- **Authentication**: JWT, Speakeasy (MFA)
-- **Views**: Pug
+- **Advanced Authentication**: JWT-based authentication (Access & Refresh tokens), session management, password resets via email, and **Multi-Factor Authentication (MFA)** using TOTP (Speakeasy).
+- **Role-Based Access Control (RBAC)**: Fine-grained permissions for `user`, `guide`, `lead-guide`, and `admin`.
+- **Complex Data Modeling**: Geospatial data for tour locations, referencing and populating, virtual properties, and document/query middlewares in Mongoose.
+- **Geospatial Queries**: Find tours within a certain radius and calculate distances to tour start locations.
+- **Payment Gateway Integration**: Secure checkout sessions utilizing **Stripe**.
+- **Security First**: Protection against NoSQL Injection, XSS attacks, HTTP Parameter Pollution, brute force attacks (rate limiting, account locking), and secure HTTP headers via Helmet.
+- **Validation**: Strict schema validation using **Zod** and Mongoose validators.
+- **File Uploads & Image Processing**: Using `multer` and `sharp` to upload, resize, and format images on the fly.
+- **Dockerized**: Contains Dockerfile and docker-compose for seamless setup and integration with Redis & MongoDB.
+- **CI/CD Pipeline**: Integrated GitHub Actions for automated unit/integration testing (Vitest).
+
+---
+
+## 💻 Tech Stack
+
+- **Backend Logic**: Node.js, Express.js, TypeScript
+- **Database**: MongoDB, Mongoose, Redis (for caching/sessions)
+- **Security**: bcryptjs, jsonwebtoken, speakeasy, helmet, express-mongo-sanitize, xss-clean, hpp, express-rate-limit
+- **Payments**: Stripe API
+- **Emails**: Nodemailer, Mailtrap
 - **Testing**: Vitest, Supertest
-- **Containerization**: Docker, Docker Compose
+- **DevOps**: Docker, Docker Compose, GitHub Actions
 
-## Getting Started
+---
+
+## 🚀 API Documentation
+
+The API endpoints are prefixed with `/api/v1`. 
+
+### 🔐 Authentication & Users
+- `POST /users/signup` - Register a new user
+- `POST /users/login` - Login user (Returns JWT & checks MFA if enabled)
+- `GET /users/logout` - Clear cookies and invalidate session
+- `POST /users/forgotPassword` - Send password reset link to email
+- `PATCH /users/resetPassword/:token` - Reset password using email token
+- `PATCH /users/updateMyPassword` - Update password for logged-in user
+- `POST /users/mfa/setup` - Generate MFA secret & QR Code
+- `POST /users/mfa/verify` - Verify MFA code & activate MFA
+- `GET /users/me` - Get current logged-in user details
+- `PATCH /users/updateMe` - Update user details (Name, Email, Profile Picture)
+- `DELETE /users/deleteMe` - Soft delete user account
+- `GET /users` - Get all users *(Admin only)*
+- `GET/PATCH/DELETE /users/:id` - Manage specific user *(Admin only)*
+
+### 🗺️ Tours
+- `GET /tours` - Get all tours (Supports advanced filtering, sorting, pagination, & limiting)
+- `POST /tours` - Create a new tour *(Admin/Lead Guide)*
+- `GET /tours/:id` - Get a single tour (Populates reviews & guides)
+- `PATCH /tours/:id` - Update a tour *(Admin/Lead Guide)*
+- `DELETE /tours/:id` - Delete a tour *(Admin/Lead Guide)*
+- `GET /tours/top-5-cheap` - Alias route for top 5 cheapest tours
+- `GET /tours/tour-stats` - Aggregation pipeline: stats by difficulty
+- `GET /tours/monthly-plan/:year` - Aggregation pipeline: busiest months in a given year *(Admin/Lead Guide)*
+- `GET /tours/tours-within/:distance/center/:latlng/unit/:unit` - Geospatial query: Find tours within a radius
+- `GET /tours/distances/:latlng/unit/:unit` - Geospatial aggregation: Calculate distances to all tours
+
+### ⭐ Reviews
+- `GET /tours/:tourId/reviews` - Get all reviews for a specific tour
+- `POST /tours/:tourId/reviews` - Create a review for a tour *(User only)*
+- `GET /reviews/:id` - Get a single review
+- `PATCH /reviews/:id` - Update a review *(Owner/Admin)*
+- `DELETE /reviews/:id` - Delete a review *(Owner/Admin)*
+
+### 💳 Bookings
+- `GET /bookings/checkout-session/:tourId` - Generate Stripe checkout session for a tour
+- `GET /bookings` - Get all bookings *(Admin/Lead Guide)*
+- `POST /bookings` - Create a booking manually *(Admin/Lead Guide)*
+- `GET/PATCH/DELETE /bookings/:id` - Manage specific booking *(Admin/Lead Guide)*
+
+---
+
+## 🛠️ Getting Started
 
 ### Prerequisites
-
-- Node.js (v18+)
-- MongoDB
-- Docker (optional)
-- Stripe Account (for payments)
+- [Node.js](https://nodejs.org/en/) (v18 or higher)
+- [MongoDB](https://www.mongodb.com/) (Local or Atlas)
+- [Stripe Account](https://stripe.com/) (For payment functionality)
+- [Mailtrap Account](https://mailtrap.io/) (For testing emails)
+- Docker (Optional)
 
 ### Installation
 
-1. **Clone the repository**
+1. **Clone the repository:**
    ```bash
-   git clone https://github.com/your-username/natours.git
-   cd natours
+   git clone https://github.com/your-username/enterprise-tour-booking-api.git
+   cd enterprise-tour-booking-api
    ```
 
-2. **Install dependencies**
+2. **Install dependencies:**
    ```bash
    npm install
    ```
 
-3. **Environment Variables**
+3. **Configure Environment Variables:**
    Create a `.env` file in the root directory based on `.env.example`:
    ```bash
    cp .env.example .env
    ```
-   *Update the variables with your actual credentials (MongoDB URI, Stripe keys, JWT secrets, Mailtrap).*
+   *Update the `.env` file with your MongoDB URI, JWT Secrets, Stripe Keys, and Mailtrap credentials.*
 
-4. **Run the Application Locally**
+4. **Run the Development Server:**
    ```bash
    npm run dev
    ```
 
-### Running with Docker
+5. **Build for Production:**
+   ```bash
+   npm run build
+   npm start
+   ```
 
-You can easily run the entire application stack (Node app + MongoDB + Redis) using Docker Compose:
+---
 
-```bash
-npm run docker:up
-```
+## 🐳 Running with Docker
 
-*To stop the containers:*
-```bash
-npm run docker:down
-```
+To run the full stack (Node Application + MongoDB + Redis) isolated in containers:
 
-## Testing
+1. **Start the containers in detached mode:**
+   ```bash
+   npm run docker:up
+   ```
+2. **Stop the containers:**
+   ```bash
+   npm run docker:down
+   ```
 
-Run unit and integration tests using Vitest:
+---
 
+## 🛡️ Security Implementations
+
+- **Account Security:** Limits repeated login attempts to prevent brute-forcing. Accounts lock temporarily after 5 failed attempts.
+- **JWT Tokens:** Uses secure, HTTP-only, SameSite cookies for tokens to prevent XSS and CSRF.
+- **Data Sanitization:** `express-mongo-sanitize` removes `$` and `.` operators from requests.
+- **XSS Protection:** `xss-clean` escapes malicious HTML/JS payloads.
+- **Parameter Pollution:** `hpp` clears query string manipulation.
+- **Rate Limiting:** Prevents DDoS by restricting requests from the same IP.
+- **Review Ownership:** Explicit checks prevent users from deleting/modifying reviews they did not write.
+
+---
+
+## 🧪 Testing
+
+The API is fully tested using **Vitest** and **Supertest** to ensure reliability of models, routes, and security middlewares.
+
+Run the test suite:
 ```bash
 npm test
 ```
+Run tests in watch mode:
+```bash
+npm run test:watch
+```
 
-## Deployment
+---
 
-This project is configured for deployment on **Vercel** (`vercel.json` provided). 
-Ensure you set your environment variables in the Vercel dashboard.
+## ☁️ Deployment
 
-## Security and Enterprise Readiness
-- **Robust Validation**: Enforced via Zod & Mongoose schemas.
-- **Strict Typing**: Full TypeScript coverage reduces runtime errors.
-- **Proper Permission Checks**: Securing user data and resources.
+The project includes a `vercel.json` file optimized for serverless deployment on [Vercel](https://vercel.com).
+To deploy:
+1. Push code to GitHub.
+2. Import repository on Vercel.
+3. Configure Environment Variables in the Vercel dashboard.
+4. Deploy!
 
-## License
-MIT License
+---
+
+## 📄 License
+This project is licensed under the MIT License.
