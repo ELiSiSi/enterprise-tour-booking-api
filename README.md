@@ -21,15 +21,15 @@ An enterprise-grade, highly secure, and fully typed RESTful API for tour managem
 - **Security First**: Protection against NoSQL Injection, XSS attacks, HTTP Parameter Pollution, brute force attacks (rate limiting, account locking), and secure HTTP headers via Helmet.
 - **Validation**: Strict schema validation using **Zod** and Mongoose validators.
 - **File Uploads & Image Processing**: Using `multer` and `sharp` to upload, resize, and format images on the fly.
-- **Dockerized**: Contains Dockerfile and docker-compose for seamless setup and integration with Redis & MongoDB.
-- **CI/CD Pipeline**: Integrated GitHub Actions for automated unit/integration testing (Vitest).
+- **Dockerized**: Contains Dockerfile and docker-compose for seamless setup.
+- **CI/CD Pipeline**: Integrated GitHub Actions for automated unit testing (Vitest).
 
 ---
 
 ## 💻 Tech Stack
 
 - **Backend Logic**: Node.js, Express.js, TypeScript
-- **Database**: MongoDB, Mongoose, Redis (for caching/sessions)
+- **Database**: MongoDB, Mongoose
 - **Security**: bcryptjs, jsonwebtoken, speakeasy, helmet, express-mongo-sanitize, xss-clean, hpp, express-rate-limit
 - **Payments**: Stripe API
 - **Emails**: Nodemailer, Mailtrap
@@ -48,9 +48,13 @@ The API endpoints are prefixed with `/api/v1`.
 - `GET /users/logout` - Clear cookies and invalidate session
 - `POST /users/forgotPassword` - Send password reset link to email
 - `PATCH /users/resetPassword/:token` - Reset password using email token
-- `PATCH /users/updateMyPassword` - Update password for logged-in user
+- `PATCH /users/updatePassword` - Update password for logged-in user
 - `POST /users/mfa/setup` - Generate MFA secret & QR Code
-- `POST /users/mfa/verify` - Verify MFA code & activate MFA
+- `POST /users/mfa/enable` - Verify MFA code & activate MFA
+- `POST /users/mfa/disable` - Disable MFA for logged-in user
+- `POST /users/refresh-token` - Refresh access token
+- `GET /users/sessions` - Get active sessions
+- `DELETE /users/sessions/:id` - Revoke specific session
 - `GET /users/me` - Get current logged-in user details
 - `PATCH /users/updateMe` - Update user details (Name, Email, Profile Picture)
 - `DELETE /users/deleteMe` - Soft delete user account
@@ -63,10 +67,7 @@ The API endpoints are prefixed with `/api/v1`.
 - `GET /tours/:id` - Get a single tour (Populates reviews & guides)
 - `PATCH /tours/:id` - Update a tour *(Admin/Lead Guide)*
 - `DELETE /tours/:id` - Delete a tour *(Admin/Lead Guide)*
-- `GET /tours/top-5-cheap` - Alias route for top 5 cheapest tours
-- `GET /tours/tour-stats` - Aggregation pipeline: stats by difficulty
-- `GET /tours/monthly-plan/:year` - Aggregation pipeline: busiest months in a given year *(Admin/Lead Guide)*
-- `GET /tours/tours-within/:distance/center/:latlng/unit/:unit` - Geospatial query: Find tours within a radius
+- `GET /tours/tour-within/:distance/center/:latlng/unit/:unit` - Geospatial query: Find tours within a radius
 - `GET /tours/distances/:latlng/unit/:unit` - Geospatial aggregation: Calculate distances to all tours
 
 ### ⭐ Reviews
@@ -128,7 +129,7 @@ The API endpoints are prefixed with `/api/v1`.
 
 ## 🐳 Running with Docker
 
-To run the full stack (Node Application + MongoDB + Redis) isolated in containers:
+To run the full stack (Node Application + MongoDB) isolated in containers:
 
 1. **Start the containers in detached mode:**
    ```bash
@@ -155,7 +156,7 @@ To run the full stack (Node Application + MongoDB + Redis) isolated in container
 
 ## 🧪 Testing
 
-The API is fully tested using **Vitest** and **Supertest** to ensure reliability of models, routes, and security middlewares.
+The API has unit tests for key models and middlewares using **Vitest**.
 
 Run the test suite:
 ```bash

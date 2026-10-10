@@ -5,9 +5,9 @@ services:
     build: .
     ports:
       - "3000:3000"
+    env_file:
+      - .env
     environment:
-      - NODE_ENV=development
-      - PORT=3000
       - MONGO_URI=mongodb://mongo:27017/natours
       - REDIS_HOST=redis
       - REDIS_PORT=6379

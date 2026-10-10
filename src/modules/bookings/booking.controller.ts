@@ -35,6 +35,10 @@ export const getCheckoutSession = asyncHandler(async (req, res, next) => {
     cancel_url: `${req.protocol}://${req.get('host')}/tour/${tour.slug}`,
     customer_email: req.user.email,
     client_reference_id: req.params.tourID,
+    metadata: {
+      tourId: tour.id,
+      userId: req.user.id
+    },
     line_items: [
       {
         price_data: {
@@ -86,7 +90,7 @@ export const updateBooking = updateOne(Booking)
 //----------------------------------------------------------------------------------------
 export const deleteBooking = deleteOne(Booking)
 
-export const webhookCheckout = async (req: any, res: any, next: any) => {
+export const webhookCheckout = asyncHandler(async (req: any, res: any, next: any) => {
   const signature = req.headers['stripe-signature'];
   let event;
   try {
@@ -97,13 +101,28 @@ export const webhookCheckout = async (req: any, res: any, next: any) => {
 
   if (event.type === 'checkout.session.completed') {
     const session: any = event.data.object;
-    const tour = session.client_reference_id;
-    const userDoc = await User.findOne({ email: session.customer_email });
-    if (userDoc) {
-      const user = userDoc.id;
-      const price = session.amount_total / 100;
-      await Booking.create({ tour, user, price });
+    
+    if (session.payment_status === 'paid') {
+      const tourId = session.metadata?.tourId || session.client_reference_id;
+      const userId = session.metadata?.userId;
+      const stripeSessionId = session.id;
+      
+      const userDoc = userId ? await User.findById(userId) : await User.findOne({ email: session.customer_email });
+      
+      if (userDoc && tourId) {
+        const price = session.amount_total / 100;
+        try {
+          await Booking.create({ tour: tourId, user: userDoc.id, price, stripeSessionId });
+        } catch (dbError: any) {
+          if (dbError.code === 11000) {
+            // Duplicate key error, meaning this session was already processed
+            console.log('Webhook event already processed');
+          } else {
+            throw dbError;
+          }
+        }
+      }
     }
   }
   res.status(200).json({ received: true });
-};
+});

@@ -19,6 +19,11 @@ const BookingSchema = new mongoose.Schema({
         type: Boolean,
         default: true,
     },
+    stripeSessionId: {
+        type: String,
+        unique: true,
+        sparse: true
+    }
 }, { toJSON: { virtuals: true }, toObject: { virtuals: true }, timestamps: true });
 BookingSchema.pre(/^find/, function (next) {
     this.populate('user').populate({

@@ -6,8 +6,8 @@ import AppError from '../../shared/utils/appError.js';
 
 //----------------------------------------------------------------------------------------
 export const setTourUserIds = (req: any, res: any, next: any) => {
-  if (!req.body.tour) req.body.tour = req.params.tourId;
-  if (!req.body.user) req.body.user = req.user.id;
+  if (req.params.tourId) req.body.tour = req.params.tourId;
+  req.body.user = req.user.id;
   next();
 };
 

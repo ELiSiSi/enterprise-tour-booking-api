@@ -2,10 +2,10 @@
   "name": "enterprise-tour-booking-api",
   "version": "1.0.0",
   "type": "module",
-  "main": "dist/server.js",
+  "main": "dist/app.js",
   "scripts": {
     "dev": "cross-env NODE_ENV=development tsx watch src/app.ts",
-    "start": "cross-env NODE_ENV=production tsx src/app.ts",
+    "start": "cross-env NODE_ENV=production node dist/app.js",
     "build": "tsc",
     "test": "vitest run",
     "test:watch": "vitest watch",

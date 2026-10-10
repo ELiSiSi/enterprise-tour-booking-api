@@ -4,10 +4,9 @@ import { createOne, deleteOne, getOne, updateOne } from '../../shared/controller
 import AppError from '../../shared/utils/appError.js';
 //----------------------------------------------------------------------------------------
 export const setTourUserIds = (req, res, next) => {
-    if (!req.body.tour)
+    if (req.params.tourId)
         req.body.tour = req.params.tourId;
-    if (!req.body.user)
-        req.body.user = req.user.id;
+    req.body.user = req.user.id;
     next();
 };
 export const checkReviewOwnership = asyncHandler(async (req, res, next) => {
