@@ -1,4 +1,4 @@
-# Natours Project
+# Enterprise Tour Booking API
 
 Natours is an enterprise-grade tour booking web application built with Node.js, Express, TypeScript, and MongoDB.
 

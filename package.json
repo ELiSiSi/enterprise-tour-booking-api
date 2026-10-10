@@ -1,5 +1,5 @@
 {
-  "name": "test",
+  "name": "enterprise-tour-booking-api",
   "version": "1.0.0",
   "type": "module",
   "main": "dist/server.js",
