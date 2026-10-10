@@ -37,6 +37,14 @@ setupSwagger(app);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+import { webhookCheckout } from './modules/bookings/booking.controller.js';
+
+app.post(
+  '/webhook-checkout',
+  express.raw({ type: 'application/json' }),
+  webhookCheckout
+);
+
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(express.static(path.join(process.cwd(), 'public')));
 
@@ -66,14 +74,14 @@ app.use(
         scriptSrc: [
           "'self'",
           'https://js.stripe.com',
-          (req, res) => `'nonce-${res.locals.cspNonce}'`,
+          (req, res: any) => `'nonce-${res.locals.cspNonce}'`,
         ],
         scriptSrcElem: [
           "'self'",
           'https://js.stripe.com',
-          (req, res) => `'nonce-${res.locals.cspNonce}'`, // ✅ إضافة nonce هنا
+          (req, res: any) => `'nonce-${res.locals.cspNonce}'`, // ✅ إضافة nonce هنا
         ],
-        scriptSrcAttr: [(req, res) => `'nonce-${res.locals.cspNonce}'`], // ✅ مهم جداً!
+        scriptSrcAttr: [(req, res: any) => `'nonce-${res.locals.cspNonce}'`], // ✅ مهم جداً!
         frameSrc: ["'self'", 'https://js.stripe.com'],
         connectSrc: ["'self'", 'https://api.stripe.com'],
         imgSrc: ["'self'", 'data:', 'https://*'],
@@ -97,7 +105,7 @@ app.use(xss());
 // app.use(morgan('dev'));
 
 app.use((req, res, next) => {
-  req.requestTime = new Date().toISOString();
+  (req as any).requestTime = new Date().toISOString();
   next();
 });
 
@@ -164,13 +172,13 @@ app.use((err, req, res, next) => {
 });
 
 //----------------------------------------------------------------------------------------------------------
-process.on('unhandledRejection', (err) => {
+process.on('unhandledRejection', (err: any) => {
   console.log('❌ Unhandled Rejection 💥 Shutting down...');
   console.log(err.name, err.message);
   process.exit(1);
 });
 
-process.on('uncaughtException', (err) => {
+process.on('uncaughtException', (err: any) => {
   console.log('❌ Uncaught Exception 💥 Shutting down...');
   console.log(err.name, err.message);
   process.exit(1);

@@ -9,15 +9,15 @@ import User from './user.model.js';
 import AppError from '../../shared/utils/appError.js';
 import { Email } from '../../shared/utils/email.js';
 // ── Token  ────────────────────────────────────────────────────
-export const signAccessToken = (payload) => JWT.sign(payload, process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET, {
+export const signAccessToken = (payload) => JWT.sign(payload, (process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET), {
     expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m',
 });
-export const verifyAccessToken = (token) => JWT.verify(token, process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET);
-export const signRefreshToken = (payload) => JWT.sign(payload, process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET, {
+export const verifyAccessToken = (token) => JWT.verify(token, (process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET));
+export const signRefreshToken = (payload) => JWT.sign(payload, (process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET), {
     expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
 });
 export const verifyRefreshToken = (token) => JWT.verify(token, process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET);
-const signMfaToken = (userId) => JWT.sign({ id: userId, mfa_pending: true }, process.env.JWT_MFA_SECRET || process.env.JWT_SECRET, {
+const signMfaToken = (userId) => JWT.sign({ id: userId, mfa_pending: true }, (process.env.JWT_MFA_SECRET || process.env.JWT_SECRET), {
     expiresIn: '5m',
 });
 const hashToken = (token) => crypto.createHash('sha256').update(token).digest('hex');
@@ -28,20 +28,20 @@ const setAuthCookies = (res, accessToken, refreshToken) => {
         httpOnly: true,
         secure: IS_PROD,
         sameSite: 'strict',
-        maxAge: ms(process.env.JWT_COOKIE_ACCESS_EXPIRES_IN || '15m'),
+        maxAge: ms((process.env.JWT_COOKIE_ACCESS_EXPIRES_IN || '15m')),
     });
     res.cookie('refresh_token', refreshToken, {
         httpOnly: true,
         secure: IS_PROD,
         sameSite: 'strict',
-        maxAge: ms(process.env.JWT_COOKIE_REFRESH_EXPIRES_IN || '7d'),
+        maxAge: ms((process.env.JWT_COOKIE_REFRESH_EXPIRES_IN || '7d')),
         path: '/',
     });
     // Also set the old 'jwt' cookie for backwards compatibility
     res.cookie('jwt', accessToken, {
         httpOnly: true,
         secure: IS_PROD,
-        maxAge: ms(process.env.JWT_COOKIE_ACCESS_EXPIRES_IN || '15m'),
+        maxAge: ms((process.env.JWT_COOKIE_ACCESS_EXPIRES_IN || '15m')),
     });
 };
 const clearAuthCookies = (res) => {
@@ -64,7 +64,7 @@ const issueTokensAndSession = async (user, res, deviceInfo = {}, oldSessionId = 
     const session = await Session.create({
         user: user._id,
         refreshTokenHash: hashToken(refreshToken),
-        expiresAt: new Date(Date.now() + ms(process.env.JWT_REFRESH_EXPIRES_IN || '7d')),
+        expiresAt: new Date(Date.now() + ms((process.env.JWT_REFRESH_EXPIRES_IN || '7d'))),
         deviceInfo,
         lastUsedAt: new Date(),
         mfaVerified: !user.mfaEnabled,

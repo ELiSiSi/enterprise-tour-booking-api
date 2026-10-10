@@ -14,7 +14,7 @@ import { Email } from '../../shared/utils/email.js';
 export const signAccessToken = (payload: any) =>
   JWT.sign(payload, (process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET) as string, {
     expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m',
-  });
+  } as any);
 
 export const verifyAccessToken = (token: string) =>
   JWT.verify(token, (process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET) as string) as any;
@@ -22,7 +22,7 @@ export const verifyAccessToken = (token: string) =>
 export const signRefreshToken = (payload: any) =>
   JWT.sign(payload, (process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET) as string, {
     expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
-  });
+  } as any);
 
 export const verifyRefreshToken = (token) =>
   JWT.verify(token, process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET);

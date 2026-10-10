@@ -22,19 +22,14 @@ const BookingSchema = new mongoose.Schema(
       default: true,
     },
   },
-  { toJSON: { virtuals: true }, toObject: { virtuals: true } },
-  {
-    timestamps: true,
-  }
+  { toJSON: { virtuals: true }, toObject: { virtuals: true }, timestamps: true }
 );
 
 BookingSchema.pre(/^find/, function (next) {
-    this.populate('user').populate({
-
+    (this as any).populate('user').populate({
         path: 'tour'
         ,select:"name"
 })
-
     next();
 })
 

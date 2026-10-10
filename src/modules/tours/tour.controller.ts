@@ -84,7 +84,7 @@ export const resizeTourImages = async (req, res, next) => {
 //----------------------------------------------------------------------------------------
 export const getDistances = asyncHandler(async (req, res, next) => {
   const { latlng, unit } = req.params;
-  const [lat, lng] = latlng.split(',');
+  const [lat, lng] = (latlng as string).split(',');
 
   if (1 === 1) {
   }
@@ -102,7 +102,7 @@ export const getDistances = asyncHandler(async (req, res, next) => {
       $geoNear: {
         near: {
           type: 'Point',
-          coordinates: [lng * 1, lat * 1],
+        coordinates: [parseFloat(lng as string), parseFloat(lat as string)],
         },
         distanceField: 'distance',
         distanceMultiplier: multiplier,
@@ -123,9 +123,9 @@ export const getDistances = asyncHandler(async (req, res, next) => {
 //----------------------------------------------------------------------------------------
 export const getToursWithin = asyncHandler(async (req, res, next) => {
   const { distance, latlng, unit } = req.params;
-  const [lat, lng] = latlng.split(',');
+  const [lat, lng] = (latlng as string).split(',');
 
-  const radius = unit === 'mi' ? distance / 3963.2 : distance / 6378.1;
+  const radius = unit === 'mi' ? (distance as any) / 3963.2 : (distance as any) / 6378.1;
 
   const tours = await Tour.find({
     startLocation: { $geoWithin: { $centerSphere: [[lng, lat], radius] } },

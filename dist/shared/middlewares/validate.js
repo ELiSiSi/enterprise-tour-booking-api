@@ -9,7 +9,10 @@ export const validate = (schema) => (req, res, next) => {
         next();
     }
     catch (err) {
-        const errorMessage = err.errors.map((e) => e.message).join(', ');
+        let errorMessage = 'Validation failed';
+        if (err.errors && Array.isArray(err.errors)) {
+            errorMessage = err.errors.map((e) => e.message).join(', ');
+        }
         return next(new AppError(`Validation Error: ${errorMessage}`, 400));
     }
 };

@@ -71,7 +71,7 @@ export const getDistances = asyncHandler(async (req, res, next) => {
             $geoNear: {
                 near: {
                     type: 'Point',
-                    coordinates: [lng * 1, lat * 1],
+                    coordinates: [parseFloat(lng), parseFloat(lat)],
                 },
                 distanceField: 'distance',
                 distanceMultiplier: multiplier,

@@ -1,4 +1,4 @@
-import { protect, isLoggedIn  } from '../users/auth.controller.js';
+import { protect, isLoggedIn, restrictTo } from '../users/auth.controller.js';
 
 import express from 'express';
 const router = express.Router();
@@ -33,10 +33,11 @@ router.post('/submit-user-data', protect, updateUserData);
 
 router.get('/my-reviews', protect, getMyReviews);
 router.get('/billing', protect, getBilling);
-router.get('/manage-tours', protect, getManageTours);
-router.get('/create-tour', protect, getCreateTour);
-router.get('/manage-users', protect, getManageUsers);
-router.get('/manage-reviews', protect, getManageReviews);
-router.get('/manage-bookings', protect, getManageBookings);
+router.use(protect, restrictTo('admin', 'lead-guide'));
+router.get('/manage-tours', getManageTours);
+router.get('/create-tour', getCreateTour);
+router.get('/manage-users', getManageUsers);
+router.get('/manage-reviews', getManageReviews);
+router.get('/manage-bookings', getManageBookings);
 
 export default router;

@@ -42,7 +42,7 @@ export const getAllReviews = asyncHandler(async (req, res, next) => {
 });
 
 //----------------------------------------------------------------------------------------
-export const getReviewById = getOne(Review);
+export const getReviewById = getOne(Review, undefined);
 //----------------------------------------------------------------------------------------
 export const updateReview = updateOne(Review);
 

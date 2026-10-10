@@ -3,6 +3,7 @@ import asyncHandler from 'express-async-handler';
 import Stripe from 'stripe';
 
 import Tour from '../tours/tour.model.js';
+import User from '../users/user.model.js';
 import Booking from './booking.model.js';
 import AppError from '../../shared/utils/appError.js';
 import {
@@ -27,7 +28,7 @@ export const getCheckoutSession = asyncHandler(async (req, res, next) => {
     return next(new AppError('No tour found with that ID', 404));
   }
 
-  const session = await stripe.checkout.sessions.create({
+  const session = await (stripe.checkout.sessions.create as any)({
     payment_method_types: ['card'],
     mode: 'payment', // مهم جدًا
     success_url: `${req.protocol}://${req.get('host')}/?tour=${req.params.tourID}&user=${req.user.id}&price=${tour.price}`,
@@ -74,7 +75,7 @@ await Booking.create({tour,user,price})
 export const createBooking = createOne(Booking)
 
 //----------------------------------------------------------------------------------------
-export const getBooking = getOne(Booking)
+export const getBooking = getOne(Booking, undefined)
 
 //----------------------------------------------------------------------------------------
 export const getAllBooking =  getAll(Booking)
@@ -84,3 +85,25 @@ export const updateBooking = updateOne(Booking)
 
 //----------------------------------------------------------------------------------------
 export const deleteBooking = deleteOne(Booking)
+
+export const webhookCheckout = async (req: any, res: any, next: any) => {
+  const signature = req.headers['stripe-signature'];
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(req.body, signature as string, process.env.STRIPE_WEBHOOK_SECRET as string);
+  } catch (err: any) {
+    return res.status(400).send(`Webhook error: ${err.message}`);
+  }
+
+  if (event.type === 'checkout.session.completed') {
+    const session: any = event.data.object;
+    const tour = session.client_reference_id;
+    const userDoc = await User.findOne({ email: session.customer_email });
+    if (userDoc) {
+      const user = userDoc.id;
+      const price = session.amount_total / 100;
+      await Booking.create({ tour, user, price });
+    }
+  }
+  res.status(200).json({ received: true });
+};

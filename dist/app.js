@@ -27,6 +27,8 @@ setupSwagger(app);
 // حل مشكلة __dirname في ES Modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+import { webhookCheckout } from './modules/bookings/booking.controller.js';
+app.post('/webhook-checkout', express.raw({ type: 'application/json' }), webhookCheckout);
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(express.static(path.join(process.cwd(), 'public')));
 //-----------------------------------------------------------------------------------------

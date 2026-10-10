@@ -1,6 +1,7 @@
 import asyncHandler from 'express-async-handler';
 import Review from './review.model.js';
 import { createOne, deleteOne, getOne, updateOne } from '../../shared/controllers/handlerFactory.js';
+import AppError from '../../shared/utils/appError.js';
 //----------------------------------------------------------------------------------------
 export const setTourUserIds = (req, res, next) => {
     if (!req.body.tour)
@@ -9,6 +10,16 @@ export const setTourUserIds = (req, res, next) => {
         req.body.user = req.user.id;
     next();
 };
+export const checkReviewOwnership = asyncHandler(async (req, res, next) => {
+    const review = await Review.findById(req.params.id);
+    if (!review)
+        return next(new AppError('No review found with that ID', 404));
+    const reviewUserId = review.user.id || review.user._id || review.user;
+    if (req.user.role !== 'admin' && reviewUserId.toString() !== req.user.id) {
+        return next(new AppError('You do not have permission to edit or delete this review', 403));
+    }
+    next();
+});
 export const createReview = createOne(Review);
 //----------------------------------------------------------------------------------------
 export const getAllReviews = asyncHandler(async (req, res, next) => {
@@ -25,7 +36,7 @@ export const getAllReviews = asyncHandler(async (req, res, next) => {
     });
 });
 //----------------------------------------------------------------------------------------
-export const getReviewById = getOne(Review);
+export const getReviewById = getOne(Review, undefined);
 //----------------------------------------------------------------------------------------
 export const updateReview = updateOne(Review);
 //----------------------------------------------------------------------------------------

@@ -142,7 +142,7 @@ tourSchema.virtual('durationWeeks').get(function () {
 
 //----------------------------------------------------------------------------------------
 tourSchema.pre('save', function (next) {
-  this.slug = slugify(this.name, { lower: true });
+  this.slug = (slugify as any)(this.name, { lower: true });
   next();
 });
 
@@ -150,21 +150,21 @@ tourSchema.pre('save', function (next) {
 tourSchema.pre('save', async function (next) {
   const guidesPromises = this.guides.map(async (id) => await User.findById(id));
 
-  this.guides = await Promise.all(guidesPromises);
+  this.guides = (await Promise.all(guidesPromises)) as any;
 
   next();
 });
 
 
 tourSchema.pre(/^find/, function (next) {
-  this.find({ secretTour: { $ne: true } });
-  this.start = Date.now();
+  (this as any).find({ secretTour: { $ne: true } });
+  (this as any).start = Date.now();
   next();
 });
 
 
 tourSchema.pre('aggregate', function (next) {
-  const firstStage = this.pipeline()[0];
+  const firstStage: any = this.pipeline()[0];
   if (firstStage && firstStage.$geoNear) return next();
 
   this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
@@ -173,7 +173,7 @@ tourSchema.pre('aggregate', function (next) {
 
 //----------------------------------------------------------------------------------------
 tourSchema.post(/^find/, function (next) {
-  this.populate({
+  (this as any).populate({
     path: 'guides',
     select: '-__v -updatedAt -createdAt',
   });

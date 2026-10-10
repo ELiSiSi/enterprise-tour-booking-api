@@ -2,6 +2,7 @@ import 'dotenv/config';
 import asyncHandler from 'express-async-handler';
 import Stripe from 'stripe';
 import Tour from '../tours/tour.model.js';
+import User from '../users/user.model.js';
 import Booking from './booking.model.js';
 import AppError from '../../shared/utils/appError.js';
 import { createOne, deleteOne, getAll, getOne, updateOne, } from '../../shared/controllers/handlerFactory.js';
@@ -55,10 +56,31 @@ export const createBookingCheckout = async (req, res, next) => {
 //----------------------------------------------------------------------------------------
 export const createBooking = createOne(Booking);
 //----------------------------------------------------------------------------------------
-export const getBooking = getOne(Booking);
+export const getBooking = getOne(Booking, undefined);
 //----------------------------------------------------------------------------------------
 export const getAllBooking = getAll(Booking);
 //----------------------------------------------------------------------------------------
 export const updateBooking = updateOne(Booking);
 //----------------------------------------------------------------------------------------
 export const deleteBooking = deleteOne(Booking);
+export const webhookCheckout = async (req, res, next) => {
+    const signature = req.headers['stripe-signature'];
+    let event;
+    try {
+        event = stripe.webhooks.constructEvent(req.body, signature, process.env.STRIPE_WEBHOOK_SECRET);
+    }
+    catch (err) {
+        return res.status(400).send(`Webhook error: ${err.message}`);
+    }
+    if (event.type === 'checkout.session.completed') {
+        const session = event.data.object;
+        const tour = session.client_reference_id;
+        const userDoc = await User.findOne({ email: session.customer_email });
+        if (userDoc) {
+            const user = userDoc.id;
+            const price = session.amount_total / 100;
+            await Booking.create({ tour, user, price });
+        }
+    }
+    res.status(200).json({ received: true });
+};
