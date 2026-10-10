@@ -1,67 +1,92 @@
-# 🌍 Natours - Tour Booking Platform
+# Natours Project
 
-Full-featured tour booking website with authentication, reviews, and online payments.
+Natours is an enterprise-grade tour booking web application built with Node.js, Express, TypeScript, and MongoDB.
 
----
+## Features
 
-## ✨ Features
+- **Authentication & Authorization**: JWT-based authentication with role-based access control (User, Guide, Lead Guide, Admin).
+- **Multi-Factor Authentication (MFA)**: Enhances security for user accounts.
+- **Tours Management**: Complete CRUD operations for tours including geospatial queries.
+- **Reviews & Ratings**: Users can leave reviews for tours they've booked.
+- **Bookings & Payments**: Secure checkout with Stripe.
+- **Security**: Data sanitization against NoSQL query injection & XSS, rate limiting, helmet headers, and parameter pollution prevention.
+- **Dockerized**: Fully containerized with Docker and Docker Compose.
+- **CI/CD**: GitHub Actions workflow for automated testing and building.
 
-- 🔐 JWT Authentication & Authorization
-- 💳 Stripe Payment Integration
-- ⭐ User Reviews & Ratings
-- 🗺️ Interactive Maps (Mapbox)
-- 📧 Email Notifications
-- 🛡️ Security (Rate limiting, XSS protection)
+## Technologies Used
 
----
+- **Backend**: Node.js, Express, TypeScript
+- **Database**: MongoDB (Mongoose)
+- **Payments**: Stripe
+- **Authentication**: JWT, Speakeasy (MFA)
+- **Views**: Pug
+- **Testing**: Vitest, Supertest
+- **Containerization**: Docker, Docker Compose
 
-## 🛠 Tech Stack
+## Getting Started
 
-![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat&logo=node.js&logoColor=white)
-![Express](https://img.shields.io/badge/Express-000000?style=flat&logo=express&logoColor=white)
-![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=flat&logo=mongodb&logoColor=white)
-![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black)
+### Prerequisites
 
-**Frontend:** Pug, HTML5, CSS3
-**APIs:** Stripe, Mapbox, Nodemailer
+- Node.js (v18+)
+- MongoDB
+- Docker (optional)
+- Stripe Account (for payments)
 
----
+### Installation
 
-## 🚀 Installation
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-username/natours.git
+   cd natours
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Environment Variables**
+   Create a `.env` file in the root directory based on `.env.example`:
+   ```bash
+   cp .env.example .env
+   ```
+   *Update the variables with your actual credentials (MongoDB URI, Stripe keys, JWT secrets, Mailtrap).*
+
+4. **Run the Application Locally**
+   ```bash
+   npm run dev
+   ```
+
+### Running with Docker
+
+You can easily run the entire application stack (Node app + MongoDB + Redis) using Docker Compose:
+
 ```bash
-# Clone repo
-git clone https://github.com/ELiSiSi/natours-Node-JS.git
-
-# Install dependencies
-npm install
-
-# Run app
-npm start
+npm run docker:up
 ```
 
-**Note:** Add `config.env` file with your MongoDB, JWT, Stripe, and Email credentials.
-
----
-
-## 📂 Project Structure
-```
-├── controllers/    # Request handlers
-├── models/         # Database models
-├── routes/         # API routes
-├── views/          # Pug templates
-├── public/         # Static files
-└── app.js       # Entry point
+*To stop the containers:*
+```bash
+npm run docker:down
 ```
 
----
+## Testing
 
-## 👨‍💻 Developer
+Run unit and integration tests using Vitest:
 
-**Ahmed Rizq Elsisi**
-Backend Developer | Node.js - Express - MongoDB
+```bash
+npm test
+```
 
-🔗 [GitHub](https://github.com/ELiSiSi) | 📧 arezk0550@gmail.com
+## Deployment
 
----
+This project is configured for deployment on **Vercel** (`vercel.json` provided). 
+Ensure you set your environment variables in the Vercel dashboard.
 
-⭐ Star this repo if you found it helpful!
+## Security and Enterprise Readiness
+- **Robust Validation**: Enforced via Zod & Mongoose schemas.
+- **Strict Typing**: Full TypeScript coverage reduces runtime errors.
+- **Proper Permission Checks**: Securing user data and resources.
+
+## License
+MIT License

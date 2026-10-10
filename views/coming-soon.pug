@@ -1,0 +1,13 @@
+extends base
+
+block content
+  main.main
+    .error(style="padding: 10rem 0; text-align: center;")
+      .error__title
+        h2.heading-secondary.heading-secondary--error(style="font-size: 3rem;") 🚧 Under Construction 🚧
+        h2.error__emoji(style="font-size: 5rem; margin-top: 2rem;") 🛠️
+      .error__msg(style="font-size: 1.8rem; margin-top: 3rem; color: #777;") 
+        | This feature is currently being developed for the Enterprise release.
+        br
+        | Please check back later!
+      a.btn.btn--green(href='/me' style="margin-top: 4rem; display: inline-block;") Back to Dashboard

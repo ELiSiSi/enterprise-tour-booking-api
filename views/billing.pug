@@ -1,0 +1,9 @@
+extends account
+
+block userViewContent
+  .user-view__form-container(style="max-width: 100%;")
+    h2.heading-secondary.ma-bt-md Billing & Invoices
+    .billing-box(style="background: #f9f9f9; padding: 3rem; border-radius: 1rem; text-align: center;")
+      svg(style="width: 5rem; height: 5rem; fill: #55c57a; margin-bottom: 2rem;")
+        use(xlink:href='/img/icons.svg#icon-credit-card')
+      p(style="font-size: 1.6rem;") You have no active invoices or pending payments. All clear!

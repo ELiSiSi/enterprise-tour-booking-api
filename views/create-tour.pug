@@ -1,0 +1,30 @@
+extends account
+
+block userViewContent
+  .user-view__form-container(style="max-width: 100%;")
+    div(style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem;")
+      h2.heading-secondary.ma-bt-md(style="margin-bottom: 0;") Create New Tour
+      a.btn.btn--small.btn--green(href='/manage-tours' style="background: #777;") &larr; Back
+
+    form.form.form-create-tour
+      .form__group
+        label.form__label(for='name') Tour Name
+        input#name.form__input(type='text', placeholder='The Forest Hiker', required, name='name')
+      .form__group
+        label.form__label(for='duration') Duration (days)
+        input#duration.form__input(type='number', placeholder='5', required, name='duration' min='1')
+      .form__group
+        label.form__label(for='price') Price ($)
+        input#price.form__input(type='number', placeholder='397', required, name='price' min='1')
+      .form__group
+        label.form__label(for='summary') Summary
+        input#summary.form__input(type='text', placeholder='Breathtaking hike through the Canadian Banff National Park', required, name='summary')
+      .form__group
+        label.form__label(for='description') Description
+        textarea#description.form__input(placeholder='Detailed description here...', required, name='description' rows='4')
+      .form__group.form__photo-upload
+        input.form__upload(type='file', accept='image/*', id='imageCover', name='imageCover' required)
+        label(for='imageCover') Choose Cover Image
+
+      .form__group.right(style="margin-top: 3rem;")
+        button.btn.btn--small.btn--green Create Tour

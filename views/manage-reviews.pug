@@ -1,0 +1,21 @@
+extends account
+
+block userViewContent
+  .user-view__form-container(style="max-width: 100%;")
+    h2.heading-secondary.ma-bt-md Manage Reviews
+    table(style="width: 100%; font-size: 1.5rem; text-align: left; border-collapse: collapse; background: #fff; box-shadow: 0 1.5rem 4rem rgba(0,0,0,0.05); border-radius: 1rem; overflow: hidden;")
+      thead(style="background: #f3f4f6; color: #333;")
+        tr
+          th(style="padding: 1.5rem;") Rating
+          th(style="padding: 1.5rem;") Review Text
+          th(style="padding: 1.5rem;") Tour
+      tbody
+        if reviews
+          each review in reviews
+            tr(style="border-bottom: 1px solid #eee;")
+              td(style="padding: 1.5rem; font-weight: 600;")= `⭐ ${review.rating}`
+              td(style="padding: 1.5rem; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;")= review.review
+              td(style="padding: 1.5rem;")= review.tour ? review.tour.name : 'Unknown'
+        else
+          tr
+            td(colspan="3" style="padding: 2rem; text-align: center;") No reviews found.

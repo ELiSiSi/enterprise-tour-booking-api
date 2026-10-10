@@ -1388,3 +1388,60 @@ body {
 }
 
 
+
+/* ========================================================
+   ?? PREMIUM 2026 ENTERPRISE OVERRIDES (ADDED BY AI)
+   ======================================================== */
+
+body {
+  background-color: #f3f4f6;
+  font-family: 'Inter', 'Roboto', sans-serif;
+}
+
+.card {
+  border-radius: 1rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.card:hover {
+  transform: translateY(-10px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+}
+
+.heading-primary span {
+  padding: 1rem 2rem;
+  border-radius: 0.5rem;
+  background-image: linear-gradient(to right bottom, rgba(125, 213, 111, 0.85), rgba(40, 180, 135, 0.85));
+  backdrop-filter: blur(5px);
+}
+
+.btn {
+  border-radius: 2rem;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.header {
+  background: linear-gradient(to right, #444, #222);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.header__logo img {
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+  transition: transform 0.3s ease;
+}
+
+.header__logo img:hover {
+  transform: rotate(5deg) scale(1.1);
+}
+

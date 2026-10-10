@@ -2,18 +2,18 @@
   "version": 2,
   "builds": [
     {
-      "src": "index.js",
+      "src": "dist/app.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "index.js"
+      "dest": "dist/app.js"
     }
   ],
   "functions": {
-    "index.js": {
+    "dist/app.js": {
       "includeFiles": "views/**"
     }
   }

@@ -1,0 +1,27 @@
+extends account
+
+block userViewContent
+  .user-view__form-container(style="max-width: 100%;")
+    div(style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem;")
+      h2.heading-secondary.ma-bt-md(style="margin-bottom: 0;") Manage Tours
+      a.btn.btn--small.btn--green(href='/create-tour') + Add New Tour
+      
+    table(style="width: 100%; font-size: 1.5rem; text-align: left; border-collapse: collapse; background: #fff; box-shadow: 0 1.5rem 4rem rgba(0,0,0,0.05); border-radius: 1rem; overflow: hidden;")
+      thead(style="background: #f3f4f6; color: #333;")
+        tr
+          th(style="padding: 1.5rem;") Tour Name
+          th(style="padding: 1.5rem;") Duration
+          th(style="padding: 1.5rem;") Price
+          th(style="padding: 1.5rem;") Action
+      tbody
+        if tours
+          each tour in tours
+            tr(style="border-bottom: 1px solid #eee; transition: all 0.3s;")
+              td(style="padding: 1.5rem; font-weight: 600;")= tour.name
+              td(style="padding: 1.5rem;")= `${tour.duration} days`
+              td(style="padding: 1.5rem;")= `$${tour.price}`
+              td(style="padding: 1.5rem;")
+                a.btn.btn--small.btn--green(href=`/tour/${tour.slug}` style="padding: 0.5rem 1.5rem; font-size: 1.2rem; border-radius: 10rem;") View
+        else
+          tr
+            td(colspan="4" style="padding: 2rem; text-align: center;") No tours found.

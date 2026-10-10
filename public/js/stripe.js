@@ -4,8 +4,7 @@ export const bookTour = async (tourId) => {
     const stripeKey = document.body.dataset.stripeKey;
 
     if (!stripeKey) {
-      console.error('Stripe key missing from body data attribute!');
-      throw new Error('Stripe public key is not configured');
+       throw new Error('Stripe public key is not configured');
     }
 
     const stripe = Stripe(stripeKey);

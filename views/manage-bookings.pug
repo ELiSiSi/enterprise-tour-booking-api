@@ -1,0 +1,24 @@
+extends account
+
+block userViewContent
+  .user-view__form-container(style="max-width: 100%;")
+    h2.heading-secondary.ma-bt-md Manage Bookings
+    table(style="width: 100%; font-size: 1.5rem; text-align: left; border-collapse: collapse; background: #fff; box-shadow: 0 1.5rem 4rem rgba(0,0,0,0.05); border-radius: 1rem; overflow: hidden;")
+      thead(style="background: #f3f4f6; color: #333;")
+        tr
+          th(style="padding: 1.5rem;") Tour
+          th(style="padding: 1.5rem;") User
+          th(style="padding: 1.5rem;") Price
+          th(style="padding: 1.5rem;") Paid
+      tbody
+        if bookings
+          each booking in bookings
+            tr(style="border-bottom: 1px solid #eee;")
+              td(style="padding: 1.5rem; font-weight: 600;")= booking.tour ? booking.tour.name : 'Unknown'
+              td(style="padding: 1.5rem;")= booking.user ? booking.user.name : 'Unknown'
+              td(style="padding: 1.5rem;")= `$${booking.price}`
+              td(style="padding: 1.5rem;")
+                span(style=`padding: 0.3rem 1rem; border-radius: 10rem; font-size: 1.2rem; color: #fff; background: ${booking.paid ? '#55c57a' : '#eb4d4b'};`)= booking.paid ? 'Yes' : 'No'
+        else
+          tr
+            td(colspan="4" style="padding: 2rem; text-align: center;") No bookings found.

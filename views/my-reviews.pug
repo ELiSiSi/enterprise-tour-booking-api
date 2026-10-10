@@ -1,0 +1,16 @@
+extends account
+
+block userViewContent
+  .user-view__form-container(style="max-width: 100%;")
+    h2.heading-secondary.ma-bt-md My Reviews
+    if reviews && reviews.length > 0
+      .reviews(style="display: flex; flex-wrap: wrap; gap: 3rem;")
+        each review in reviews
+          .reviews__card(style="width: 100%; background: #f9f9f9; padding: 3rem; border-radius: 1rem; box-shadow: 0 1.5rem 4rem rgba(0,0,0,0.05);")
+            p.reviews__text(style="font-size: 1.6rem; font-style: italic;")= `"${review.review}"`
+            .reviews__rating(style="margin-top: 2rem;")
+              each star in [1, 2, 3, 4, 5]
+                svg.reviews__star(class=`reviews__star--${review.rating >= star ? 'active' : 'inactive'}`)
+                  use(xlink:href='/img/icons.svg#icon-star')
+    else
+      p(style="font-size: 1.6rem; color: #777;") You haven't written any reviews yet!

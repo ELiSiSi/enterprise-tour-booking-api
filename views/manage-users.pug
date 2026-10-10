@@ -1,0 +1,25 @@
+extends account
+
+block userViewContent
+  .user-view__form-container(style="max-width: 100%;")
+    h2.heading-secondary.ma-bt-md Manage Users
+    table(style="width: 100%; font-size: 1.5rem; text-align: left; border-collapse: collapse; background: #fff; box-shadow: 0 1.5rem 4rem rgba(0,0,0,0.05); border-radius: 1rem; overflow: hidden;")
+      thead(style="background: #f3f4f6; color: #333;")
+        tr
+          th(style="padding: 1.5rem;") Photo
+          th(style="padding: 1.5rem;") Name
+          th(style="padding: 1.5rem;") Email
+          th(style="padding: 1.5rem;") Role
+      tbody
+        if users
+          each usr in users
+            tr(style="border-bottom: 1px solid #eee;")
+              td(style="padding: 1.5rem;")
+                img(src=`/img/users/${usr.photo || 'default.jpg'}` style="height: 4rem; width: 4rem; border-radius: 50%;")
+              td(style="padding: 1.5rem; font-weight: 600;")= usr.name
+              td(style="padding: 1.5rem;")= usr.email
+              td(style="padding: 1.5rem;")
+                span(style=`padding: 0.3rem 1rem; border-radius: 10rem; font-size: 1.2rem; color: #fff; background: ${usr.role === 'admin' ? '#ff7730' : '#55c57a'};`)= usr.role
+        else
+          tr
+            td(colspan="4" style="padding: 2rem; text-align: center;") No users found.

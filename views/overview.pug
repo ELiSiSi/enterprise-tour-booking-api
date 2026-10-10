@@ -18,15 +18,15 @@ block content
             .card__data
               svg.card__icon
                 use(xlink:href='/img/tours/icons.svg#icon-map-pin')
-              span= tour.startLocation.description
+              span= tour.startLocation ? tour.startLocation.description || tour.startLocation.address : 'TBA'
             .card__data
               svg.card__icon
                 use(xlink:href='/img/tours/icons.svg#icon-calendar')
-              span= tour.startDates[0].toLocaleString('en-us', {month: 'long', year: 'numeric'})
+              span= tour.startDates && tour.startDates[0] ? tour.startDates[0].toLocaleString('en-us', {month: 'long', year: 'numeric'}) : 'TBA'
             .card__data
               svg.card__icon
                 use(xlink:href='/img/tours/icons.svg#icon-flag')
-              span= `${tour.locations.length} stops`
+              span= tour.locations ? `${tour.locations.length} stops` : '0 stops'
             .card__data
               svg.card__icon
                 use(xlink:href='/img/tours/icons.svg#icon-user')
