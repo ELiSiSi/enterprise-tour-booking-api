@@ -186,7 +186,6 @@ tourSchema.post(/^find/, function (next) {
 
 //----------------------------------------------------------------------------------------
 tourSchema.index({ price: 1, ratingsAverage: -1 });
-tourSchema.index({ slug: 1 });
 tourSchema.index({ startLocation: '2dsphere' });
 
 const Tour = mongoose.model('Tour', tourSchema);

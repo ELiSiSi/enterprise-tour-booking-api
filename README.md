@@ -1,184 +1,130 @@
 # Enterprise Tour Booking API
 
-![Node.js](https://img.shields.io/badge/Node.js-18.x-green)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue)
+![Node.js](https://img.shields.io/badge/Node.js-22%2B-green)
+![TypeScript](https://img.shields.io/badge/TypeScript-blue)
 ![Express](https://img.shields.io/badge/Express-4.x-lightgrey)
-![MongoDB](https://img.shields.io/badge/MongoDB-6.x-brightgreen)
-![Docker](https://img.shields.io/badge/Docker-Ready-blue)
-![License](https://img.shields.io/badge/License-MIT-green)
+![MongoDB](https://img.shields.io/badge/MongoDB-brightgreen)
+![License](https://img.shields.io/badge/License-ISC-blue)
 
-An enterprise-grade, highly secure, and fully typed RESTful API for tour management and booking. Built with **Node.js, Express, TypeScript, and MongoDB**, this architecture serves as a solid foundation for scaleable booking platforms.
+A TypeScript REST API and server-rendered application for tour management and bookings. It includes JWT authentication, role-based permissions, TOTP MFA, MongoDB persistence, Stripe Checkout, and a BullMQ email worker.
 
----
+## Features
 
-## 🌟 Key Features
+- Modular user, tour, review, booking, and view routes.
+- Access/refresh JWTs, database-backed sessions, password reset, account lockout, and TOTP MFA.
+- Role-based authorization and ownership checks for reviews.
+- Tour search, filtering, pagination, and geospatial queries.
+- Stripe Checkout with a signature-verified webhook; bookings are created only after confirmed payment and duplicate session deliveries are idempotent.
+- Image uploads and resizing with Multer and Sharp.
+- Welcome and password-reset emails processed by a BullMQ worker backed by Redis.
+- OpenAPI documentation at `/api-docs`.
+- GitHub Actions build and test checks on Node.js 22 and 24.
 
-- **Advanced Authentication**: JWT-based authentication (Access & Refresh tokens), session management, password resets via email, and **Multi-Factor Authentication (MFA)** using TOTP (Speakeasy).
-- **Role-Based Access Control (RBAC)**: Fine-grained permissions for `user`, `guide`, `lead-guide`, and `admin`.
-- **Complex Data Modeling**: Geospatial data for tour locations, referencing and populating, virtual properties, and document/query middlewares in Mongoose.
-- **Geospatial Queries**: Find tours within a certain radius and calculate distances to tour start locations.
-- **Payment Gateway Integration**: Secure checkout sessions utilizing **Stripe**.
-- **Security First**: Protection against NoSQL Injection, XSS attacks, HTTP Parameter Pollution, brute force attacks (rate limiting, account locking), and secure HTTP headers via Helmet.
-- **Validation**: Strict schema validation using **Zod** and Mongoose validators.
-- **File Uploads & Image Processing**: Using `multer` and `sharp` to upload, resize, and format images on the fly.
-- **Dockerized**: Contains Dockerfile and docker-compose for seamless setup.
-- **CI/CD Pipeline**: Integrated GitHub Actions for automated unit testing (Vitest).
+## Requirements
 
----
+- Node.js 22.12 or later (CI also checks Node.js 24).
+- MongoDB.
+- Redis for queued email processing.
+- Stripe test or live keys for checkout and webhook handling.
+- SMTP credentials for email delivery.
+- Docker Compose is optional for running MongoDB, Redis, the API, and the worker together.
 
-## 💻 Tech Stack
+## Local setup
 
-- **Backend Logic**: Node.js, Express.js, TypeScript
-- **Database**: MongoDB, Mongoose
-- **Security**: bcryptjs, jsonwebtoken, speakeasy, helmet, express-mongo-sanitize, xss-clean, hpp, express-rate-limit
-- **Payments**: Stripe API
-- **Emails**: Nodemailer, Mailtrap
-- **Testing**: Vitest, Supertest
-- **DevOps**: Docker, Docker Compose, GitHub Actions
+1. Install dependencies:
 
----
-
-## 🚀 API Documentation
-
-The API endpoints are prefixed with `/api/v1`. 
-
-### 🔐 Authentication & Users
-- `POST /users/signup` - Register a new user
-- `POST /users/login` - Login user (Returns JWT & checks MFA if enabled)
-- `GET /users/logout` - Clear cookies and invalidate session
-- `POST /users/forgotPassword` - Send password reset link to email
-- `PATCH /users/resetPassword/:token` - Reset password using email token
-- `PATCH /users/updatePassword` - Update password for logged-in user
-- `POST /users/mfa/setup` - Generate MFA secret & QR Code
-- `POST /users/mfa/enable` - Verify MFA code & activate MFA
-- `POST /users/mfa/disable` - Disable MFA for logged-in user
-- `POST /users/refresh-token` - Refresh access token
-- `GET /users/sessions` - Get active sessions
-- `DELETE /users/sessions/:id` - Revoke specific session
-- `GET /users/me` - Get current logged-in user details
-- `PATCH /users/updateMe` - Update user details (Name, Email, Profile Picture)
-- `DELETE /users/deleteMe` - Soft delete user account
-- `GET /users` - Get all users *(Admin only)*
-- `GET/PATCH/DELETE /users/:id` - Manage specific user *(Admin only)*
-
-### 🗺️ Tours
-- `GET /tours` - Get all tours (Supports advanced filtering, sorting, pagination, & limiting)
-- `POST /tours` - Create a new tour *(Admin/Lead Guide)*
-- `GET /tours/:id` - Get a single tour (Populates reviews & guides)
-- `PATCH /tours/:id` - Update a tour *(Admin/Lead Guide)*
-- `DELETE /tours/:id` - Delete a tour *(Admin/Lead Guide)*
-- `GET /tours/tour-within/:distance/center/:latlng/unit/:unit` - Geospatial query: Find tours within a radius
-- `GET /tours/distances/:latlng/unit/:unit` - Geospatial aggregation: Calculate distances to all tours
-
-### ⭐ Reviews
-- `GET /tours/:tourId/reviews` - Get all reviews for a specific tour
-- `POST /tours/:tourId/reviews` - Create a review for a tour *(User only)*
-- `GET /reviews/:id` - Get a single review
-- `PATCH /reviews/:id` - Update a review *(Owner/Admin)*
-- `DELETE /reviews/:id` - Delete a review *(Owner/Admin)*
-
-### 💳 Bookings
-- `GET /bookings/checkout-session/:tourId` - Generate Stripe checkout session for a tour
-- `GET /bookings` - Get all bookings *(Admin/Lead Guide)*
-- `POST /bookings` - Create a booking manually *(Admin/Lead Guide)*
-- `GET/PATCH/DELETE /bookings/:id` - Manage specific booking *(Admin/Lead Guide)*
-
----
-
-## 🛠️ Getting Started
-
-### Prerequisites
-- [Node.js](https://nodejs.org/en/) (v18 or higher)
-- [MongoDB](https://www.mongodb.com/) (Local or Atlas)
-- [Stripe Account](https://stripe.com/) (For payment functionality)
-- [Mailtrap Account](https://mailtrap.io/) (For testing emails)
-- Docker (Optional)
-
-### Installation
-
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/your-username/enterprise-tour-booking-api.git
-   cd enterprise-tour-booking-api
+   ```sh
+   npm ci
    ```
 
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+2. Create a local environment file and fill in the required values:
 
-3. **Configure Environment Variables:**
-   Create a `.env` file in the root directory based on `.env.example`:
-   ```bash
+   ```sh
    cp .env.example .env
    ```
-   *Update the `.env` file with your MongoDB URI, JWT Secrets, Stripe Keys, and Mailtrap credentials.*
 
-4. **Run the Development Server:**
-   ```bash
+   Keep `.env` private and do not commit real credentials. `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `JWT_SECRET`, MongoDB settings, and SMTP settings must be configured for the features you use.
+
+3. Start MongoDB and Redis, then run the API and email worker in separate terminals:
+
+   ```sh
    npm run dev
+   npm run dev:worker
    ```
 
-5. **Build for Production:**
-   ```bash
-   npm run build
-   npm start
-   ```
+4. Visit `http://localhost:3000` for the web app and `http://localhost:3000/api-docs` for the OpenAPI UI.
 
----
+### Stripe webhook for local development
 
-## 🐳 Running with Docker
+Configure Stripe to send `checkout.session.completed` events to:
 
-To run the full stack (Node Application + MongoDB) isolated in containers:
+```text
+http://localhost:3000/webhook-checkout
+```
 
-1. **Start the containers in detached mode:**
-   ```bash
-   npm run docker:up
-   ```
-2. **Stop the containers:**
-   ```bash
-   npm run docker:down
-   ```
+For local testing, forward Stripe CLI events to that URL and set the CLI-provided signing secret as `STRIPE_WEBHOOK_SECRET`. The webhook expects the raw request body; do not place JSON body parsing before its route.
 
----
+## Docker Compose
 
-## 🛡️ Security Implementations
+After creating and configuring `.env`, build and start the services:
 
-- **Account Security:** Limits repeated login attempts to prevent brute-forcing. Accounts lock temporarily after 5 failed attempts.
-- **JWT Tokens:** Uses secure, HTTP-only, SameSite cookies for tokens to prevent XSS and CSRF.
-- **Data Sanitization:** `express-mongo-sanitize` removes `$` and `.` operators from requests.
-- **XSS Protection:** `xss-clean` escapes malicious HTML/JS payloads.
-- **Parameter Pollution:** `hpp` clears query string manipulation.
-- **Rate Limiting:** Prevents DDoS by restricting requests from the same IP.
-- **Review Ownership:** Explicit checks prevent users from deleting/modifying reviews they did not write.
+```sh
+npm run docker:up
+```
 
----
+Compose starts the API, a separate email worker, MongoDB, and Redis. Stop the services with:
 
-## 🧪 Testing
+```sh
+npm run docker:down
+```
 
-The API has unit tests for key models and middlewares using **Vitest**.
+The worker is a persistent process and must be deployed alongside the API for queued emails to be delivered. The Compose setup is the supported bundled deployment; a serverless-only deployment does not run the worker automatically.
 
-Run the test suite:
-```bash
+## Build and tests
+
+```sh
+npm run build
 npm test
 ```
-Run tests in watch mode:
-```bash
-npm run test:watch
-```
 
----
+Tests use Vitest and an in-memory MongoDB instance. They cover selected model and validation behavior, Stripe webhook signature/payment/idempotency handling, review ownership, administrative page access, and OpenAPI route definitions; they are not an exhaustive end-to-end suite.
 
-## ☁️ Deployment
+GitHub Actions runs `npm ci`, `npm run build`, and `npm test` against Node.js 22 and 24.
 
-The project includes a `vercel.json` file optimized for serverless deployment on [Vercel](https://vercel.com).
-To deploy:
-1. Push code to GitHub.
-2. Import repository on Vercel.
-3. Configure Environment Variables in the Vercel dashboard.
-4. Deploy!
+## API overview
 
----
+API routes require a bearer access token unless noted otherwise. The full route and parameter list is available from `/api-docs`.
 
-## 📄 License
-This project is licensed under the MIT License.
+### Users
+
+- `POST /api/v1/users/signup` and `POST /api/v1/users/login` (public)
+- `POST /api/v1/users/login/mfa` and `POST /api/v1/users/refresh-token` (public)
+- `GET /api/v1/users/logout` (public)
+- `POST /api/v1/users/forgotPassword` and `PATCH /api/v1/users/resetPassword/:token` (public)
+- `PATCH /api/v1/users/updatePassword`
+- `GET /api/v1/users/me`, `PATCH /api/v1/users/updateMe`, and `DELETE /api/v1/users/deleteMe`
+- `GET /api/v1/users/logout-all`
+- `GET /api/v1/users/sessions` and `DELETE /api/v1/users/sessions/:id`
+- `POST /api/v1/users/mfa/setup`, `/mfa/enable`, and `/mfa/disable`
+- `GET/POST /api/v1/users` and `GET/PATCH/DELETE /api/v1/users/:id` (admin or lead guide)
+
+### Tours and reviews
+
+- `GET/POST /api/v1/tours`; creating tours requires admin or lead-guide access.
+- `GET/PATCH/DELETE /api/v1/tours/:id`; mutation requires admin or lead-guide access.
+- `GET /api/v1/tours/tour-within/:distance/center/:latlng/unit/:unit`
+- `GET /api/v1/tours/distances/:latlng/unit/:unit`
+- `GET/POST /api/v1/tours/:tourId/reviews`
+- `GET/PATCH/DELETE /api/v1/tours/:tourId/reviews/:id`
+- `GET/POST /api/v1/reviews` and `GET/PATCH/DELETE /api/v1/reviews/:id`
+- Review creation uses the authenticated user ID; nested review routes take the tour ID from the URL. Users can only edit or delete their own reviews, except administrators.
+
+### Bookings and payments
+
+- `GET /api/v1/bookings/checkout-session/:tourID` creates a Stripe Checkout Session for the authenticated user.
+- `GET/POST /api/v1/bookings` and `GET/PATCH/DELETE /api/v1/bookings/:id` require admin or lead-guide access.
+- `POST /webhook-checkout` is called by Stripe, not by clients. It verifies the Stripe signature, paid status, metadata, currency, and tour price before creating a booking. Repeated delivery for a Checkout Session does not create another booking.
+
+## License
+
+ISC. See `package.json`.

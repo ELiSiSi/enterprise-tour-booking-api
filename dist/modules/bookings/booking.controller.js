@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import asyncHandler from 'express-async-handler';
 import Stripe from 'stripe';
+import mongoose from 'mongoose';
 import Tour from '../tours/tour.model.js';
 import User from '../users/user.model.js';
 import Booking from './booking.model.js';
@@ -18,14 +19,14 @@ export const getCheckoutSession = asyncHandler(async (req, res, next) => {
     }
     const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
-        mode: 'payment', // مهم جدًا
-        success_url: `${req.protocol}://${req.get('host')}/?tour=${req.params.tourID}&user=${req.user.id}&price=${tour.price}`,
+        mode: 'payment',
+        success_url: `${req.protocol}://${req.get('host')}/?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${req.protocol}://${req.get('host')}/tour/${tour.slug}`,
         customer_email: req.user.email,
         client_reference_id: req.params.tourID,
         metadata: {
-            tourId: tour.id,
-            userId: req.user.id
+            tourId: tour._id.toString(),
+            userId: req.user.id.toString(),
         },
         line_items: [
             {
@@ -38,7 +39,7 @@ export const getCheckoutSession = asyncHandler(async (req, res, next) => {
                             `${req.protocol}://${req.get('host')}/img/tours/${tour.imageCover}`,
                         ],
                     },
-                    unit_amount: tour.price * 100, // السعر بالسنت
+                    unit_amount: Math.round(tour.price * 100),
                 },
                 quantity: 1,
             },
@@ -49,14 +50,6 @@ export const getCheckoutSession = asyncHandler(async (req, res, next) => {
         session,
     });
 });
-//----------------------------------------------------------------------------------------
-export const createBookingCheckout = async (req, res, next) => {
-    const { tour, user, price } = req.query;
-    if (!tour && !user && !price)
-        return next();
-    await Booking.create({ tour, user, price });
-    res.redirect(req.originalUrl.split('?')[0]);
-};
 //----------------------------------------------------------------------------------------
 export const createBooking = createOne(Booking);
 //----------------------------------------------------------------------------------------
@@ -69,36 +62,62 @@ export const updateBooking = updateOne(Booking);
 export const deleteBooking = deleteOne(Booking);
 export const webhookCheckout = asyncHandler(async (req, res, next) => {
     const signature = req.headers['stripe-signature'];
+    if (typeof signature !== 'string') {
+        return res.status(400).json({ status: 'fail', message: 'Missing Stripe signature.' });
+    }
     let event;
     try {
         event = stripe.webhooks.constructEvent(req.body, signature, process.env.STRIPE_WEBHOOK_SECRET);
     }
     catch (err) {
-        return res.status(400).send(`Webhook error: ${err.message}`);
+        return res.status(400).json({ status: 'fail', message: `Webhook signature verification failed: ${err.message}` });
     }
-    if (event.type === 'checkout.session.completed') {
-        const session = event.data.object;
-        if (session.payment_status === 'paid') {
-            const tourId = session.metadata?.tourId || session.client_reference_id;
-            const userId = session.metadata?.userId;
-            const stripeSessionId = session.id;
-            const userDoc = userId ? await User.findById(userId) : await User.findOne({ email: session.customer_email });
-            if (userDoc && tourId) {
-                const price = session.amount_total / 100;
-                try {
-                    await Booking.create({ tour: tourId, user: userDoc.id, price, stripeSessionId });
-                }
-                catch (dbError) {
-                    if (dbError.code === 11000) {
-                        // Duplicate key error, meaning this session was already processed
-                        console.log('Webhook event already processed');
-                    }
-                    else {
-                        throw dbError;
-                    }
-                }
-            }
-        }
+    if (event.type !== 'checkout.session.completed') {
+        return res.status(200).json({ received: true });
     }
-    res.status(200).json({ received: true });
+    const session = event.data.object;
+    if (session.payment_status !== 'paid') {
+        return res.status(200).json({ received: true });
+    }
+    const tourId = session.metadata?.tourId;
+    const userId = session.metadata?.userId;
+    if (session.mode !== 'payment' ||
+        session.currency !== 'usd' ||
+        !session.id ||
+        !tourId ||
+        !userId ||
+        !mongoose.Types.ObjectId.isValid(tourId) ||
+        !mongoose.Types.ObjectId.isValid(userId)) {
+        return res.status(400).json({
+            status: 'fail',
+            message: 'The completed checkout session is missing valid booking details.',
+        });
+    }
+    const [tour, user] = await Promise.all([
+        Tour.findById(tourId),
+        User.findById(userId),
+    ]);
+    if (!tour || !user) {
+        return res.status(400).json({
+            status: 'fail',
+            message: 'The checkout session references an unknown tour or user.',
+        });
+    }
+    const expectedAmount = Math.round(tour.price * 100);
+    if (session.amount_total !== expectedAmount) {
+        return res.status(400).json({
+            status: 'fail',
+            message: 'The checkout amount does not match the tour price.',
+        });
+    }
+    await Booking.updateOne({ stripeSessionId: session.id }, {
+        $setOnInsert: {
+            tour: tour._id,
+            user: user._id,
+            price: tour.price,
+            paid: true,
+            stripeSessionId: session.id,
+        },
+    }, { upsert: true });
+    return res.status(200).json({ received: true });
 });

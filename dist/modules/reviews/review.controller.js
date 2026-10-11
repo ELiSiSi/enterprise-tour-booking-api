@@ -4,8 +4,12 @@ import { createOne, deleteOne, getOne, updateOne } from '../../shared/controller
 import AppError from '../../shared/utils/appError.js';
 //----------------------------------------------------------------------------------------
 export const setTourUserIds = (req, res, next) => {
-    if (req.params.tourId)
+    if (req.params.tourId) {
         req.body.tour = req.params.tourId;
+    }
+    else if (!req.body.tour) {
+        return next(new AppError('A tour ID is required to create a review.', 400));
+    }
     req.body.user = req.user.id;
     next();
 };

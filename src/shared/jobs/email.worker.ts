@@ -1,20 +1,19 @@
 import { Worker } from 'bullmq';
 import { logger } from '../utils/logger.js';
 import { Email } from '../utils/email.js';
+import type { EmailJobData } from './email.queue.js';
 
 const connection = {
   host: process.env.REDIS_HOST || '127.0.0.1',
-  port: process.env.REDIS_PORT || 6379,
+  port: Number(process.env.REDIS_PORT || 6379),
 };
 
-export const emailWorker = new Worker(
+export const emailWorker = new Worker<EmailJobData>(
   'emailQueue',
   async (job) => {
     const { user, url, template, subject } = job.data;
     logger.info(`Processing email job ${job.id} for ${user.email}`);
 
-    // Assuming Email class can be constructed with user and url
-    // For specific templates, we might need to adjust the class slightly.
     const emailInstance = new Email(user, url);
     await emailInstance.send(template, subject);
   },

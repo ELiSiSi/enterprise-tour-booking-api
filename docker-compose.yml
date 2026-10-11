@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   app:
     build: .
@@ -8,16 +6,31 @@ services:
     env_file:
       - .env
     environment:
+      - NODE_ENV=production
+      - PORT=3000
       - MONGO_URI=mongodb://mongo:27017/natours
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-    volumes:
-      - .:/app
-      - /app/node_modules
     depends_on:
-      - mongo
-      - redis
-    command: npm run start
+      mongo:
+        condition: service_started
+      redis:
+        condition: service_healthy
+
+  email-worker:
+    build: .
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - MONGO_URI=mongodb://mongo:27017/natours
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: npm run worker
+    restart: unless-stopped
 
   mongo:
     image: mongo:6.0
@@ -32,6 +45,11 @@ services:
       - "6379:6379"
     volumes:
       - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
 volumes:
   mongo-data:

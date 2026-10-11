@@ -20,9 +20,6 @@ import {
   getManageBookings,
 } from './view.controller.js';
 
-import { createBookingCheckout } from '../bookings/booking.controller.js';
-
-
 router.get('/', isLoggedIn, getOverview);
 router.get('/tour/:slug', isLoggedIn, getTour);
 router.get('/login', isLoggedIn, getLoginForm);

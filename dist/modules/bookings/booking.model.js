@@ -22,7 +22,7 @@ const BookingSchema = new mongoose.Schema({
     stripeSessionId: {
         type: String,
         unique: true,
-        sparse: true
+        sparse: true,
     }
 }, { toJSON: { virtuals: true }, toObject: { virtuals: true }, timestamps: true });
 BookingSchema.pre(/^find/, function (next) {

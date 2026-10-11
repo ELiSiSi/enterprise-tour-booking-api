@@ -8,7 +8,7 @@ import ms from 'ms';
 import Session from './session.model.js';
 import User from './user.model.js';
 import AppError from '../../shared/utils/appError.js';
-import { Email } from '../../shared/utils/email.js';
+import { addEmailToQueue } from '../../shared/jobs/email.queue.js';
 
 // ── Token  ────────────────────────────────────────────────────
 export const signAccessToken = (payload: any) =>
@@ -108,7 +108,12 @@ export const signup = asyncHandler(async (req, res, next) => {
     passwordConfirm: req.body.passwordConfirm,
   });
   const url = `${req.protocol}://${req.get('host')}/me`;
-  new Email(newUser, url).sendWelcome().catch(err => console.error('📧 Email Error (Mailtrap Rate Limit):', err.message));
+  await addEmailToQueue({
+    user: { email: newUser.email, name: newUser.name },
+    url,
+    template: 'welcome',
+    subject: 'Welcome to the Natours Family!',
+  });
   
   const { accessToken, refreshToken, session } = await issueTokensAndSession(
     newUser,
@@ -548,7 +553,12 @@ export const forgotPassword = asyncHandler(async (req, res, next) => {
       'host'
     )}/api/v1/users/resetPassword/${resetToken}`;
 
-    await new Email(user, resetURL).sendPasswordReset();
+    await addEmailToQueue({
+      user: { email: user.email, name: user.name },
+      url: resetURL,
+      template: 'passwordReset',
+      subject: 'Your password reset token (valid for only 10 minutes)',
+    });
     res.status(200).json({
       status: 'success',
       message: 'Token sent to email !',

@@ -4,11 +4,6 @@ import { htmlToText } from 'html-to-text';
 
 
 import path from 'path';
-import { fileURLToPath } from 'url';
-
-// ✅ حل __dirname في ES Modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 export class Email {
   public to: string;
@@ -47,7 +42,7 @@ export class Email {
   // Send the actual email
   async send(template, subject) {
     // 1) Render HTML based on a pug template
-    const html = pug.renderFile(`${__dirname}/../../../views/email/${template}.pug`, {
+    const html = pug.renderFile(path.resolve(process.cwd(), 'views', 'email', `${template}.pug`), {
       firstName: this.firstName,
       url: this.url,
       subject,
