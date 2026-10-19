@@ -1,4 +1,12 @@
 import winston from 'winston';
+import { mkdirSync } from 'node:fs';
+import { dirname } from 'node:path';
+
+const errorLogPath = 'logs/error.log';
+const combinedLogPath = 'logs/combined.log';
+
+// Winston's file transports do not create their parent directory.
+mkdirSync(dirname(errorLogPath), { recursive: true });
 
 const { combine, timestamp, printf, colorize } = winston.format;
 
@@ -13,8 +21,8 @@ export const logger = winston.createLogger({
     myFormat
   ),
   transports: [
-    new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'logs/combined.log' }),
+    new winston.transports.File({ filename: errorLogPath, level: 'error' }),
+    new winston.transports.File({ filename: combinedLogPath }),
   ],
 });
 

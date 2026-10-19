@@ -11,7 +11,7 @@ const reviewSchema = new mongoose.Schema(
       type: Number,
       min: 1,
       max: 5,
-      // required: [true, 'Rating is required'],
+      required: [true, 'Rating is required'],
     },
     createdAt: {
       type: Date,
@@ -71,17 +71,27 @@ reviewSchema.statics.calcAverageRatings = async function (tourId) {
   }
 };
 
-reviewSchema.post('save', function (next) {
-  (this.constructor as any).calcAverageRatings(this.tour);
+reviewSchema.post('save', async function () {
+  await (this.constructor as any).calcAverageRatings(this.tour);
 });
 
-reviewSchema.pre(/^findOneAnd/, async function (next) {
-  (this as any).r = await (this as any).findOne();
-  next();
+reviewSchema.pre(/^findOneAnd/, async function () {
+  (this as any).r = await (this as any).model
+    .findOne((this as any).getQuery())
+    .select('tour')
+    .lean();
 });
 
-reviewSchema.post(/^findOneAnd/, async function (next) {
-  await (this as any).r.constructor.calcAverageRatings((this as any).r.tourId);
+reviewSchema.post(/^findOneAnd/, async function () {
+  const previousReview = (this as any).r;
+  if (previousReview) {
+    await (this as any).model.calcAverageRatings(previousReview.tour);
+    const update = (this as any).getUpdate?.();
+    const nextTour = update?.tour ?? update?.$set?.tour;
+    if (nextTour && nextTour.toString() !== previousReview.tour.toString()) {
+      await (this as any).model.calcAverageRatings(nextTour);
+    }
+  }
 });
 const Review = mongoose.model('Review', reviewSchema);
 

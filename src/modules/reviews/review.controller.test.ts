@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import Review from './review.model.js';
 import { checkReviewOwnership, setTourUserIds } from './review.controller.js';
 import User from '../users/user.model.js';
+import Tour from '../tours/tour.model.js';
 
 describe('Review authorization', () => {
   it('always uses the authenticated user and nested tour instead of request body IDs', () => {
@@ -74,5 +75,44 @@ describe('Review authorization', () => {
     );
 
     expect(next).toHaveBeenCalledWith();
+  });
+
+  it('recalculates tour ratings after review creation, update, and deletion', async () => {
+    const user = await User.create({
+      name: 'Rating User',
+      email: 'rating-user@example.com',
+      password: 'password123',
+      passwordConfirm: 'password123',
+    });
+    const tour = await Tour.create({
+      name: 'A Tour For Rating Calculations',
+      duration: 3,
+      maxGroupSize: 10,
+      difficulty: 'medium',
+      price: 250,
+      summary: 'A tour to verify calculated review ratings.',
+      imageCover: 'rating-test.jpg',
+      startLocation: { type: 'Point', coordinates: [0, 0] },
+    });
+
+    const review = await Review.create({
+      review: 'A rating calculation test.',
+      rating: 3,
+      tour: tour._id,
+      user: user._id,
+    });
+    let updatedTour = await Tour.findById(tour._id);
+    expect(updatedTour?.ratingsQuantity).toBe(1);
+    expect(updatedTour?.ratingsAverage).toBe(3);
+
+    await Review.findByIdAndUpdate(review._id, { rating: 5 }, { runValidators: true });
+    updatedTour = await Tour.findById(tour._id);
+    expect(updatedTour?.ratingsQuantity).toBe(1);
+    expect(updatedTour?.ratingsAverage).toBe(5);
+
+    await Review.findByIdAndDelete(review._id);
+    updatedTour = await Tour.findById(tour._id);
+    expect(updatedTour?.ratingsQuantity).toBe(0);
+    expect(updatedTour?.ratingsAverage).toBe(4.5);
   });
 });

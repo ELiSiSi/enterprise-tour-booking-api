@@ -1,5 +1,8 @@
 name: CI
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: [ main, master ]
@@ -9,6 +12,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     strategy:
       fail-fast: false
@@ -25,3 +29,5 @@ jobs:
     - run: npm ci
     - run: npm run build
     - run: npm test
+    - name: Build Docker image
+      run: docker build --tag enterprise-tour-booking-api:${{ matrix.node-version }} .

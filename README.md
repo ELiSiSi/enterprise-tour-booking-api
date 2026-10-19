@@ -18,7 +18,9 @@ A TypeScript REST API and server-rendered application for tour management and bo
 - Image uploads and resizing with Multer and Sharp.
 - Welcome and password-reset emails processed by a BullMQ worker backed by Redis.
 - OpenAPI documentation at `/api-docs`.
-- GitHub Actions build and test checks on Node.js 22 and 24.
+- Liveness and readiness endpoints for container orchestrators.
+- Request IDs on responses to connect client reports with server logs.
+- GitHub Actions build, test, and Docker image checks on Node.js 22 and 24.
 
 ## Requirements
 
@@ -53,6 +55,8 @@ A TypeScript REST API and server-rendered application for tour management and bo
    ```
 
 4. Visit `http://localhost:3000` for the web app and `http://localhost:3000/api-docs` for the OpenAPI UI.
+
+The service exposes `GET /health/live` for process liveness and `GET /health/ready` for MongoDB readiness. API error responses include a request ID; use that ID when correlating a report with application logs.
 
 ### Stripe webhook for local development
 

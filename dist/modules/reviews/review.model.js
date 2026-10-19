@@ -9,7 +9,7 @@ const reviewSchema = new mongoose.Schema({
         type: Number,
         min: 1,
         max: 5,
-        // required: [true, 'Rating is required'],
+        required: [true, 'Rating is required'],
     },
     createdAt: {
         type: Date,
@@ -65,15 +65,25 @@ reviewSchema.statics.calcAverageRatings = async function (tourId) {
         });
     }
 };
-reviewSchema.post('save', function (next) {
-    this.constructor.calcAverageRatings(this.tour);
+reviewSchema.post('save', async function () {
+    await this.constructor.calcAverageRatings(this.tour);
 });
-reviewSchema.pre(/^findOneAnd/, async function (next) {
-    this.r = await this.findOne();
-    next();
+reviewSchema.pre(/^findOneAnd/, async function () {
+    this.r = await this.model
+        .findOne(this.getQuery())
+        .select('tour')
+        .lean();
 });
-reviewSchema.post(/^findOneAnd/, async function (next) {
-    await this.r.constructor.calcAverageRatings(this.r.tourId);
+reviewSchema.post(/^findOneAnd/, async function () {
+    const previousReview = this.r;
+    if (previousReview) {
+        await this.model.calcAverageRatings(previousReview.tour);
+        const update = this.getUpdate?.();
+        const nextTour = update?.tour ?? update?.$set?.tour;
+        if (nextTour && nextTour.toString() !== previousReview.tour.toString()) {
+            await this.model.calcAverageRatings(nextTour);
+        }
+    }
 });
 const Review = mongoose.model('Review', reviewSchema);
 export default Review;

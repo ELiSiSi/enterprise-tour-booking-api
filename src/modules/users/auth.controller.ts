@@ -429,7 +429,7 @@ export const completeMFALogin = (req, res, next) => {
 };
 
 export const disableMFA = asyncHandler(async (req, res, next) => {
-  const { password, code, mfa_token, user_id, reason } = req.body;
+  const { password, code, user_id, reason } = req.body;
   const requester = req.user;
 
   if (user_id) {
@@ -452,8 +452,7 @@ export const disableMFA = asyncHandler(async (req, res, next) => {
   }
 
   if (!password) return next(new AppError('password is required.', 422));
-  if (!code && !mfa_token)
-    return next(new AppError('Provide either code or mfa_token.', 422));
+  if (!code) return next(new AppError('A TOTP code is required.', 422));
 
   const user = await User.findById(requester._id).select(
     '+password +mfaSecret'
@@ -464,15 +463,13 @@ export const disableMFA = asyncHandler(async (req, res, next) => {
 
   if (!user.mfaEnabled) return next(new AppError('MFA not enabled.', 404));
 
-  if (code) {
-    const ok = speakeasy.totp.verify({
-      secret: user.mfaSecret,
-      encoding: 'base32',
-      token: code,
-      window: 1,
-    });
-    if (!ok) return next(new AppError('Invalid TOTP code.', 401));
-  }
+  const ok = speakeasy.totp.verify({
+    secret: user.mfaSecret,
+    encoding: 'base32',
+    token: code,
+    window: 1,
+  });
+  if (!ok) return next(new AppError('Invalid TOTP code.', 401));
 
   user.mfaEnabled = false;
   user.mfaSecret = undefined;

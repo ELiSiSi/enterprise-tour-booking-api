@@ -1,92 +1,60 @@
 import AppError from '../utils/appError.js';
-//---------------------------------------------------------------------------------------------------
-const handleCastErrorDB = (err) => {
-    const message = `Invalid ${err.path}: ${err.value}.`;
-    return new AppError(message, 400);
-};
-//---------------------------------------------------------------------------------------------------
-const handleDuplicateFieldsDB = (err) => {
-    if (!err.keyValue) {
-        return new AppError('Duplicate field value detected!', 400);
+import { logger } from '../utils/logger.js';
+const normalizeError = (err) => {
+    if (err.name === 'CastError') {
+        return new AppError(`Invalid value for ${err.path}.`, 400);
     }
-    const field = Object.keys(err.keyValue)[0];
-    const value = err.keyValue[field] || 'unknown';
-    const message = `Duplicate field value: "${value}". Please use another value for ${field}!`;
-    return new AppError(message, 400);
-};
-//---------------------------------------------------------------------------------------------------
-const handleValidationErrorDB = (err) => {
-    const errors = Object.values(err.errors).map((el) => el.message);
-    const message = `Invalid input data. ${errors.join('. ')}`;
-    return new AppError(message, 400);
-};
-//---------------------------------------------------------------------------------------------------
-const handleJWTError = () => {
-    new AppError('The user no longer exists.', 401);
-};
-//---------------------------------------------------------------------------------------------------
-const handleJWTExpiredError = () => {
-    new AppError(' your Token has expired !!! please log in again ', 401);
-};
-//---------------------------------------------------------------------------------------------------
-const sendErrorDev = (err, req, res) => {
-    if (req.originalUrl.startsWith('/api')) {
-        res.status(err.statusCode).json({
-            status: err.status,
-            error: err,
-            message: err.message,
-            stack: err.stack,
-        });
+    if (err.code === 11000) {
+        const field = Object.keys(err.keyValue || {})[0];
+        return new AppError(field ? `A record with this ${field} already exists.` : 'Duplicate field value.', 409);
     }
-    else {
-        // ← ده اللي هيشتغل لو الـ URL مش /api
-        res.status(err.statusCode).render('error', {
-            title: 'Something went wrong!',
-            msg: err.message,
-        });
+    if (err.name === 'ValidationError') {
+        const details = Object.values(err.errors || {})
+            .map((item) => item.message)
+            .join('. ');
+        return new AppError(`Invalid input data. ${details}`, 400);
     }
+    if (err.name === 'JsonWebTokenError') {
+        return new AppError('Invalid authentication token.', 401);
+    }
+    if (err.name === 'TokenExpiredError') {
+        return new AppError('Your token has expired. Please log in again.', 401);
+    }
+    if (err instanceof SyntaxError && 'body' in err) {
+        return new AppError('Malformed JSON request body.', 400);
+    }
+    return err;
 };
-//---------------------------------------------------------------------------------------------------
-const sendErrorPro = (err, res) => {
-    if (err.isOperational) {
-        res.status(err.statusCode).json({
-            status: err.status,
-            message: err.message,
-        });
-    }
-    else {
-        console.error('ERROR 💥', err);
-        res.status(500).json({
-            status: 'error',
-            message: 'Something went very wrong!',
-        });
-    }
-};
-//---------------------------------------------------------------------------------------------------
 export default (err, req, res, next) => {
-    err.statusCode = err.statusCode || 500;
-    err.status = err.status || 'error';
-    if (process.env.NODE_ENV === 'development') {
-        sendErrorDev(err, req, res);
+    if (res.headersSent)
+        return next(err);
+    const error = normalizeError(err);
+    const statusCode = Number(error.statusCode) || 500;
+    const status = error.status || (statusCode < 500 ? 'fail' : 'error');
+    const requestId = res.locals.requestId;
+    const isOperational = error.isOperational === true;
+    if (!isOperational) {
+        logger.error('Unhandled request error', {
+            requestId,
+            method: req.method,
+            path: req.originalUrl,
+            error,
+        });
     }
-    else if (process.env.NODE_ENV === 'production') {
-        let error = err;
-        error.message = err.message;
-        if (err.name === 'CastError') {
-            error = handleCastErrorDB(err);
-        }
-        else if (err.code === 11000) {
-            error = handleDuplicateFieldsDB(err);
-        }
-        else if (err.name === 'ValidationError') {
-            error = handleValidationErrorDB(err);
-        }
-        else if (err.name === 'jsonWebTokenError') {
-            error = handleJWTError();
-        }
-        else if (err.name === 'TokenExpiredError') {
-            error = handleJWTExpiredError();
-        }
-        sendErrorPro(error, res);
+    const message = process.env.NODE_ENV === 'development' || isOperational
+        ? error.message
+        : 'Something went wrong. Please try again later.';
+    if (req.originalUrl.startsWith('/api')) {
+        return res.status(statusCode).json({
+            status,
+            message,
+            requestId,
+            ...(process.env.NODE_ENV === 'development' ? { stack: error.stack } : {}),
+        });
     }
+    return res.status(statusCode).render('error', {
+        title: 'Something went wrong!',
+        msg: message,
+        requestId,
+    });
 };

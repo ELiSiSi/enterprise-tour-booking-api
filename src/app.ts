@@ -14,6 +14,7 @@ import hpp from 'hpp';
 import cookieParser from 'cookie-parser';
 import crypto from 'crypto';
 import compression from 'compression';
+import errorController from './shared/middlewares/errorController.js';
 
 
 
@@ -31,7 +32,20 @@ const MONGO_URI = process.env.MONGO_URI;
 const app = express();
 const port = process.env.PORT || 3000;
 
+app.use((req, res, next) => {
+  const requestId = crypto.randomUUID();
+  res.locals.requestId = requestId;
+  res.setHeader('X-Request-Id', requestId);
+  next();
+});
+
 setupSwagger(app);
+
+app.get('/health/live', (_req, res) => res.status(200).json({ status: 'ok' }));
+app.get('/health/ready', (_req, res) => {
+  const ready = mongoose.connection.readyState === 1;
+  res.status(ready ? 200 : 503).json({ status: ready ? 'ok' : 'not_ready' });
+});
 
 // حل مشكلة __dirname في ES Modules
 const __filename = fileURLToPath(import.meta.url);
@@ -153,23 +167,7 @@ app.all('*', (req, res, next) => {
 });
 
 // Global error handler (في الآخر!)
-app.use((err, req, res, next) => {
-  err.statusCode = err.statusCode || 500;
-  err.status = err.status || 'error';
-
-  if (req.originalUrl.startsWith('/api')) {
-    return res.status(err.statusCode).json({
-      status: err.status,
-      message: err.message,
-    });
-  }
-
-  // عرض صفحة error
-  res.status(err.statusCode).render('error', {
-    title: 'Something went wrong!',
-    msg: err.message,
-  });
-});
+app.use(errorController);
 
 //----------------------------------------------------------------------------------------------------------
 process.on('unhandledRejection', (err: any) => {
