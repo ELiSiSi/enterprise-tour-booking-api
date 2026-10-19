@@ -9,7 +9,9 @@
     "start": "cross-env NODE_ENV=production node dist/app.js",
     "worker": "cross-env NODE_ENV=production node dist/worker.js",
     "build": "tsc",
+    "type-check": "tsc --noEmit",
     "test": "vitest run",
+    "verify": "npm run type-check && npm test && npm run build",
     "test:watch": "vitest watch",
     "docker:up": "docker compose up --build -d",
     "docker:down": "docker compose down"
